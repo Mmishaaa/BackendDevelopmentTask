@@ -10,6 +10,7 @@ namespace BackendDevelopmentTask.DAL.Repositories
         Task<List<TEntity>> GetAllAsync(bool trackChanges = false, CancellationToken cancellationToken = default);
         Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken);
         Task DeleteByIdAsync(TEntity entity, CancellationToken cancellationToken);
+        Task<PagedEntityModel<TEntity>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ctCancellationToken);
     }
     
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : BaseEntity
@@ -53,6 +54,26 @@ namespace BackendDevelopmentTask.DAL.Repositories
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+        
+        public virtual async Task<PagedEntityModel<TEntity>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct)
+        {
+            var entities = _dbSet
+                .AsNoTracking()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            var totalCount = await _dbSet.CountAsync(ct);
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            return new PagedEntityModel<TEntity>
+            {
+                TotalCount = totalCount,
+                Items = await entities.ToListAsync(ct),
+                CurrentPage = pageNumber,
+                TotalPages = totalPages
+            };
         }
     }
 }

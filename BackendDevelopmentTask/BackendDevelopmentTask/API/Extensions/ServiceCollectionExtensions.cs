@@ -1,6 +1,6 @@
-﻿using BackendDevelopmentTask.BLL.DI;
+﻿using BackendDevelopmentTask.BLL.Extensions;
 
-namespace BackendDevelopmentTask.API.DI;
+namespace BackendDevelopmentTask.API.Extensions;
 
 public static class ServiceCollectionExtensions
 {

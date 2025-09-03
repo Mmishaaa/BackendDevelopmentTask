@@ -1,4 +1,5 @@
-﻿using BackendDevelopmentTask.BLL.Models;
+﻿using BackendDevelopmentTask.BLL.Exceptions;
+using BackendDevelopmentTask.BLL.Models;
 using BackendDevelopmentTask.DAL.Entities;
 using BackendDevelopmentTask.DAL.Repositories;
 using Mapster;
@@ -15,13 +16,15 @@ public class NodeService(INodeRepository repository, ITreeRepository treeReposit
 {
     public override async Task<NodeModel> CreateAsync(NodeModel nodeModel, CancellationToken cancellationToken)
     {
-        var treeEntity = await treeRepository.GetByNameAsync(nodeModel.TreeName, cancellationToken) ?? throw new Exception("Tree with this name doesn't exist");
+        var treeEntity = await treeRepository.GetByNameAsync(nodeModel.TreeName, cancellationToken) ?? throw new TreeNotFoundException(nodeModel.TreeName);;
         
         if(nodeModel.ParentNodeId is not null)
         {
-            var parentEntity = await _repository.GetByIdAsync(nodeModel.ParentNodeId.Value, cancellationToken: cancellationToken) ?? throw new Exception("Parent node with this id doesn't exist");
+            var parentEntity = await _repository.GetByIdAsync(nodeModel.ParentNodeId.Value, cancellationToken: cancellationToken) 
+                               ?? throw new NodeNotFoundException(nodeModel.ParentNodeId.Value);
+            
             if(parentEntity.TreeId != treeEntity.Id)
-                throw new Exception("Parent node belongs to another tree");
+                throw new NodeTreeMismatchException(nodeModel.ParentNodeId.Value, treeEntity.Id);
         }
 
         nodeModel.TreeId = treeEntity.Id;
@@ -43,7 +46,7 @@ public class NodeService(INodeRepository repository, ITreeRepository treeReposit
 
     public async Task DeleteAsync(string treeName, Guid nodeId, CancellationToken cancellationToken)
     {
-        var treeEntity = await treeRepository.GetByNameAsync(treeName, cancellationToken) ?? throw new Exception("Tree with this name doesn't exist");
+        var treeEntity = await treeRepository.GetByNameAsync(treeName, cancellationToken) ?? throw new TreeNotFoundException(treeName);
         if(treeEntity.Nodes?.Any(n => n.Id == nodeId) is false) return;
         
         var entityToDelete = await _repository.GetByIdAsync(nodeId, cancellationToken: cancellationToken);
@@ -54,14 +57,14 @@ public class NodeService(INodeRepository repository, ITreeRepository treeReposit
 
     public async Task<NodeModel> RenameNode(string treeName, Guid nodeId, string newNodeName, CancellationToken cancellationToken)
     {
-        var treeEntity = await treeRepository.GetByNameAsync(treeName, cancellationToken) ?? throw new Exception("Tree with this name doesn't exist");
-        if(treeEntity.Nodes?.Any(n => n.Id == nodeId) is false) throw new Exception("Node with this id doesn't exist in this tree");
+        var treeEntity = await treeRepository.GetByNameAsync(treeName, cancellationToken) ?? throw new TreeNotFoundException(treeName);
+        if(treeEntity.Nodes?.Any(n => n.Id == nodeId) is false) throw new NodeNotFoundInTreeException(nodeId, treeName);
         
-        var entityToRename = _repository.GetByIdAsync(nodeId, trackChanges: true, cancellationToken: cancellationToken).Result ?? throw new Exception("Node with this id doesn't exist");
+        var entityToRename = _repository.GetByIdAsync(nodeId, trackChanges: true, cancellationToken: cancellationToken).Result ?? throw new NodeNotFoundException(nodeId);
         entityToRename.Name = newNodeName;
         
         var isNameUnique = await repository.IsNameInTheTreeUniqueAsync(treeName, newNodeName, cancellationToken);
-        if (!isNameUnique) throw new Exception("Node with this name already exists in this tree");
+        if (!isNameUnique) throw new DuplicateNodeNameException(newNodeName, treeName);
         
         var updatedEntity = await _repository.UpdateAsync(entityToRename, cancellationToken);
         var updatedModel = new NodeModel

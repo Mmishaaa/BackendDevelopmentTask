@@ -1,7 +1,7 @@
 ﻿using BackendDevelopmentTask.DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace BackendDevelopmentTask.DAL.DI;
+namespace BackendDevelopmentTask.DAL.Extensions;
 
 public static class ServiceCollectionExtensions
 {

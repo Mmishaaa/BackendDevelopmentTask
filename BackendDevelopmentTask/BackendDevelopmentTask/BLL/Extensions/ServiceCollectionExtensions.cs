@@ -1,8 +1,8 @@
-﻿using BackendDevelopmentTask.BLL.Services;
-using BackendDevelopmentTask.DAL.DI;
-using Mapster;
+﻿using BackendDevelopmentTask.BLL.Providers;
+using BackendDevelopmentTask.BLL.Services;
+using BackendDevelopmentTask.DAL.Extensions;
 
-namespace BackendDevelopmentTask.BLL.DI;
+namespace BackendDevelopmentTask.BLL.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -14,5 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INodeService, NodeService>();
         services.AddScoped<ITreeService, TreeService>();
         services.AddScoped<IExceptionJournalService, ExceptionJournalService>();
+        
+        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
     }   
 }

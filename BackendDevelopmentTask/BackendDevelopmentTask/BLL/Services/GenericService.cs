@@ -5,13 +5,14 @@ using Mapster;
 
 namespace BackendDevelopmentTask.BLL.Services;
 
-public interface IGenericService<TModel>
+public interface IGenericService<TModel> where TModel : BaseModel
 {
     Task<TModel> CreateAsync(TModel model, CancellationToken cancellationToken);
     Task<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken);
     Task<TModel> UpdateAsync(Guid id, TModel model, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+    Task<PagedEntityModel<TModel>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
 }
 
 public class GenericService<TModel, TEntity> : IGenericService<TModel> where TModel : BaseModel where TEntity : BaseEntity
@@ -45,7 +46,7 @@ public class GenericService<TModel, TEntity> : IGenericService<TModel> where TMo
 
     public virtual async Task<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var entity = await _repository.GetByIdAsync(id, cancellationToken: cancellationToken);
+        var entity = await _repository.GetByIdAsync(id, cancellationToken: cancellationToken) ?? throw new Exception("Entity with this id doesn't exist");
         return entity.Adapt<TModel>();
     }
 
@@ -56,5 +57,14 @@ public class GenericService<TModel, TEntity> : IGenericService<TModel> where TMo
         newEntity.Id = id;
         await _repository.UpdateAsync(newEntity, cancellationToken);
         return newEntity.Adapt<TModel>();
+    }
+    
+    public virtual async Task<PagedEntityModel<TModel>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var entities = await _repository.GetPagedAsync(pageNumber, pageSize, cancellationToken);
+
+        var entitiesModel = entities.Adapt<PagedEntityModel<TModel>>();
+
+        return entitiesModel;
     }
 }

@@ -4,4 +4,5 @@ namespace BackendDevelopmentTask.DAL.Repositories;
 
 public interface IExceptionJournalRepository : IGenericRepository<ExceptionJournalEntity>;
 
-public class ExceptionJournalRepository(ApplicationDbContext context) : GenericRepository<ExceptionJournalEntity>(context), IExceptionJournalRepository;
+public class ExceptionJournalRepository(ApplicationDbContext context) 
+    : GenericRepository<ExceptionJournalEntity>(context), IExceptionJournalRepository;
