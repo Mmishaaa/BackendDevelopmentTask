@@ -1,5 +1,6 @@
 ﻿using BackendDevelopmentTask.BLL.Services;
 using BackendDevelopmentTask.DAL.DI;
+using Mapster;
 
 namespace BackendDevelopmentTask.BLL.DI;
 

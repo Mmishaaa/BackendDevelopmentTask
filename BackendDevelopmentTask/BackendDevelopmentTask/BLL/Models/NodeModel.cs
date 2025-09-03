@@ -4,6 +4,7 @@ public class NodeModel : BaseModel
 {
     public string Name { get; set; } = null!;
 
+    public string TreeName { get; set; } = null!;
     public Guid TreeId { get; set; }
     public TreeModel Tree { get; set; } = null!;
     
