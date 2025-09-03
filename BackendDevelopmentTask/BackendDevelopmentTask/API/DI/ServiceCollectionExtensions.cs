@@ -4,8 +4,9 @@ namespace BackendDevelopmentTask.API.DI;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddAPIDependencies(this IServiceCollection services, IConfiguration configuration)
+    public static void AddAPIDependencies(
+        this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        services.AddBLLDependencies(configuration);
+        services.AddBLLDependencies(configuration, environment);
     }
 }

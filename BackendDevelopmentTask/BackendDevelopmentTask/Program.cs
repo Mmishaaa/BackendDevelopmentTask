@@ -1,15 +1,14 @@
-using BackendDevelopmentTask;
+using System.Text.Json.Serialization;
 using BackendDevelopmentTask.API.DI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-MapsterConfig.RegisterMappings();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);;
 
-builder.Services.AddAPIDependencies(builder.Configuration);
+builder.Services.AddAPIDependencies(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 

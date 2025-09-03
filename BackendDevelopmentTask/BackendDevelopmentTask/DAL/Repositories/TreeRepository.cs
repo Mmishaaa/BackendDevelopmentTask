@@ -12,6 +12,9 @@ public class TreeRepository(ApplicationDbContext context) : GenericRepository<Tr
 {
     public async Task<TreeEntity?> GetByNameAsync(string name, CancellationToken cancellationToken)
     {
-        return await _context.Trees.FirstOrDefaultAsync(t => t.Name == name, cancellationToken);
+        return await _context.Trees
+            .AsNoTracking()
+            .Include(t => t.Nodes)!.ThenInclude(n => n.ChildNodes)
+            .FirstOrDefaultAsync(t => t.Name == name, cancellationToken);
     }
 }
