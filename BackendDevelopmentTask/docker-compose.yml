@@ -1,0 +1,46 @@
+services:
+  backenddevelopmenttask:
+    image: ${DOCKER_REGISTRY-}backenddevelopmenttask
+    build:
+      context: .
+      dockerfile: BackendDevelopmentTask/Dockerfile
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+        - ConnectionStrings__Postgres=Host=postgresql;Port=5432;Database=db;Username=postgres;Password=postgres
+
+  postgresql:
+    image: postgres
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
